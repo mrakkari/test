@@ -7,12 +7,6 @@ import { FilterSidebarComponent } from '../filter-sidebar/filter-sidebar.compone
 import { FlightCardComponent } from '../flight-card/flight-card.component';
 import { FlightService, Flight, FlightSearchParams, FlightSearchResponse } from '../../services/flight.service';
 
-interface ShowSections {
-  escales: boolean;
-  heuresDepart: boolean;
-  dureeVoyage: boolean;
-}
-
 interface FilterOptions {
   escales: string[];
   heuresDepart: { min: number; max: number };
@@ -31,7 +25,9 @@ interface FilterOptions {
     FlightCardComponent
   ],
   template: `
-    <div class="bg-slate-800 min-h-screen">
+    <!-- Landing Page View -->
+    <div *ngIf="!hasSearched()" class="bg-slate-800 min-h-screen">
+      <!-- Header -->
       <div class="bg-slate-800 px-4 sm:px-6 lg:px-8 py-6">
         <div class="max-w-7xl mx-auto">
           <div class="flex items-center justify-between mb-8">
@@ -41,14 +37,16 @@ interface FilterOptions {
               </svg>
               <span class="text-white text-xl font-bold">Skyscanner</span>
             </div>
-            <div class="flex items-center space-x-4 text-white">
+            <div class="flex items-center space-x-4 text-white text-sm">
               <span class="cursor-pointer hover:text-blue-300">Help</span>
-              <span class="cursor-pointer hover:text-blue-300">English (UK) • Tunisia • EUR</span>
+              <span class="cursor-pointer hover:text-blue-300">🌐</span>
               <span class="cursor-pointer hover:text-blue-300">❤️</span>
+              <span class="cursor-pointer hover:text-blue-300">👤</span>
               <span class="cursor-pointer hover:text-blue-300">Log in</span>
             </div>
           </div>
 
+          <!-- Navigation Tabs -->
           <div class="flex space-x-4 mb-8">
             <div class="nav-tab active">
               <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -70,12 +68,14 @@ interface FilterOptions {
             </div>
           </div>
 
-          <div class="mb-8">
+          <!-- Main Heading -->
+          <div class="mb-12">
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">
-              Find the best flight deals anywhere
+              Millions of cheap flights. One simple search.
             </h1>
           </div>
 
+          <!-- Trip Type Selector -->
           <div class="mb-6">
             <div class="inline-flex bg-slate-700 rounded-lg p-1">
               <button class="px-4 py-2 rounded-md bg-slate-600 text-white text-sm font-medium">
@@ -87,7 +87,8 @@ interface FilterOptions {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 mb-2">
+          <!-- Search Form -->
+          <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 mb-6">
             <div class="search-input-group">
               <div class="search-input-label">From</div>
               <input
@@ -147,25 +148,27 @@ interface FilterOptions {
             </div>
           </div>
 
-          <div class="flex flex-wrap gap-4 mb-6 text-sm text-white">
+          <!-- Additional Options -->
+          <div class="flex flex-wrap gap-4 mb-8 text-sm text-white">
             <label class="flex items-center">
-              <input type="checkbox" class="mr-2">
+              <input type="checkbox" class="mr-2 rounded">
               Add nearby airports
             </label>
             <label class="flex items-center">
-              <input type="checkbox" class="mr-2">
+              <input type="checkbox" class="mr-2 rounded">
               Add nearby airports
             </label>
             <label class="flex items-center">
-              <input type="checkbox" class="mr-2">
+              <input type="checkbox" class="mr-2 rounded">
               Direct flights
             </label>
           </div>
 
-          <div class="flex justify-end mb-6">
+          <!-- Search Button -->
+          <div class="flex justify-center mb-8">
             <button
               type="button"
-              class="btn-primary text-lg px-12"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-16 py-4 rounded-lg transition-colors duration-200"
               (click)="searchFlights()"
               [disabled]="isLoading() || !isSearchValid()"
             >
@@ -180,7 +183,8 @@ interface FilterOptions {
             </button>
           </div>
 
-          <div class="flex items-center justify-between bg-slate-700 rounded-lg p-4 mt-6">
+          <!-- Price Tracking Banner -->
+          <div class="flex items-center justify-between bg-slate-700 rounded-lg p-4">
             <div class="flex items-center text-white">
               <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -194,55 +198,150 @@ interface FilterOptions {
         </div>
       </div>
 
-      <div class="bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <!-- Filter Sidebar -->
-            <app-filter-sidebar 
-              (filtersChanged)="applyFilters($event)"
-            ></app-filter-sidebar>
+      <!-- Hero Section -->
+      <div class="relative">
+        <div class="h-96 bg-gradient-to-r from-orange-400 via-orange-500 to-yellow-500 flex items-center justify-center">
+          <div class="text-center text-white">
+            <h2 class="text-3xl font-bold mb-4">Explore every destination</h2>
+            <button class="bg-white text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+              Search flights everywhere
+            </button>
+          </div>
+        </div>
+      </div>
 
-            <!-- Main Content -->
-            <div class="lg:col-span-3">
-              <!-- Price Calendar -->
-              <app-price-calendar 
-                [selectedDate]="searchParams().date_depart"
-                (dateSelected)="onPriceDateSelected($event)"
-              ></app-price-calendar>
-
-              <!-- Flight Cards -->
-              <div class="mt-6 space-y-4" *ngIf="filteredFlights().length > 0">
-                <app-flight-card 
-                  *ngFor="let flight of filteredFlights()"
-                  [flight]="flight"
-                ></app-flight-card>
+      <!-- FAQ Section -->
+      <div class="bg-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-8">Booking flights with Skyscanner</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-4">
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-medium text-gray-900">How does Skyscanner work?</h3>
               </div>
-              <div *ngIf="filteredFlights().length === 0 && !isLoading()" class="text-center py-12">
-                <div class="mb-4">
-                  <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z"/>
-                  </svg>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun vol trouvé</h3>
-                <p class="text-gray-600">Essayez de modifier vos critères de recherche.</p>
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-medium text-gray-900">How can I find the cheapest flight using Skyscanner?</h3>
+              </div>
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-medium text-gray-900">Where should I book a flight to right now?</h3>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-medium text-gray-900">Does Skyscanner do hotels too?</h3>
+              </div>
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-medium text-gray-900">What about car hire?</h3>
+              </div>
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-medium text-gray-900">What's a Price Alert?</h3>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div 
-        *ngIf="showCalendar()"
-        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
-        (click)="showCalendar.set(false)"
-      >
-        <div (click)="stopPropagation($event)" class="w-full max-w-md">
-          <app-calendar 
-            [initialDate]="getInitialDate()"
-            (dateSelected)="onDateSelected($event)"
-            (cancelled)="showCalendar.set(false)"
-          ></app-calendar>
+    <!-- Results Page View -->
+    <div *ngIf="hasSearched()" class="bg-gray-50 min-h-screen">
+      <!-- Header with Search Summary -->
+      <div class="bg-slate-800 px-4 sm:px-6 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <button (click)="goBack()" class="text-white mr-4 p-2 rounded-full hover:bg-slate-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+              </button>
+              <div class="text-white">
+                <span class="font-medium">{{ getSearchSummary() }}</span>
+              </div>
+            </div>
+            <div class="flex items-center space-x-4 text-white text-sm">
+              <span class="cursor-pointer hover:text-blue-300">🌐</span>
+              <span class="cursor-pointer hover:text-blue-300">❤️</span>
+              <span class="cursor-pointer hover:text-blue-300">👤</span>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <!-- Filter Sidebar -->
+          <div class="lg:col-span-1">
+            <app-filter-sidebar 
+              (filtersChanged)="applyFilters($event)"
+            ></app-filter-sidebar>
+          </div>
+
+          <!-- Main Content -->
+          <div class="lg:col-span-3">
+            <!-- Price Calendar -->
+            <app-price-calendar 
+              [selectedDate]="searchParams().date_depart"
+              (dateSelected)="onPriceDateSelected($event)"
+            ></app-price-calendar>
+
+            <!-- Sort Options -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 mt-6">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-6">
+                  <div class="text-center">
+                    <div class="text-sm font-medium text-blue-600">Le meilleur</div>
+                    <div class="text-lg font-bold">79 €</div>
+                    <div class="text-xs text-gray-500">2 h 55</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-sm font-medium text-gray-600">Le moins cher</div>
+                    <div class="text-lg font-bold">79 €</div>
+                    <div class="text-xs text-gray-500">2 h 55</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-sm font-medium text-gray-600">Le plus rapide</div>
+                    <div class="text-lg font-bold">96 €</div>
+                    <div class="text-xs text-gray-500">2 h 50</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Flight Cards -->
+            <div class="space-y-4" *ngIf="filteredFlights().length > 0">
+              <app-flight-card 
+                *ngFor="let flight of filteredFlights()"
+                [flight]="flight"
+              ></app-flight-card>
+            </div>
+
+            <!-- No Results -->
+            <div *ngIf="filteredFlights().length === 0 && !isLoading()" class="text-center py-12">
+              <div class="mb-4">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun vol trouvé</h3>
+              <p class="text-gray-600">Essayez de modifier vos critères de recherche.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Modal -->
+    <div 
+      *ngIf="showCalendar()"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+      (click)="showCalendar.set(false)"
+    >
+      <div (click)="stopPropagation($event)" class="w-full max-w-md">
+        <app-calendar 
+          [initialDate]="getInitialDate()"
+          (dateSelected)="onDateSelected($event)"
+          (cancelled)="showCalendar.set(false)"
+        ></app-calendar>
       </div>
     </div>
   `,
@@ -282,7 +381,10 @@ interface FilterOptions {
 })
 export class FlightSearchComponent {
   searchParams = signal<any>({
-    ville_depart: 'Tunisia (TN)',
+    ville_depart: '',
+    ville_arrivee: '',
+    date_depart: '',
+    date_retour: '',
     travellers: { adults: 1, cabinClass: 'Economy' }
   });
   showCalendar = signal(false);
@@ -290,6 +392,7 @@ export class FlightSearchComponent {
   isLoading = signal(false);
   searchResults = signal<FlightSearchResponse | null>(null);
   errorMessage = signal<string | null>(null);
+  hasSearched = signal(false);
   filters = signal<FilterOptions>({
     escales: ['direct', '1', '2+'],
     heuresDepart: { min: 0, max: 1439 },
@@ -329,7 +432,6 @@ export class FlightSearchComponent {
       this.searchParams.update(params => ({ ...params, date_retour: date }));
     }
     this.showCalendar.set(false);
-    this.searchFlights();
   }
 
   onPriceDateSelected(date: string) {
@@ -353,6 +455,7 @@ export class FlightSearchComponent {
     this.flightService.searchFlights(this.searchParams()).subscribe({
       next: (response) => {
         this.searchResults.set(response);
+        this.hasSearched.set(true);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -385,6 +488,16 @@ export class FlightSearchComponent {
 
   isSearchValid(): boolean {
     return !!this.searchParams().ville_depart && !!this.searchParams().ville_arrivee && !!this.searchParams().date_depart && !!this.searchParams().date_retour;
+  }
+
+  getSearchSummary(): string {
+    const params = this.searchParams();
+    return `${params.ville_depart} - ${params.ville_arrivee} • ${params.travellers.adults} adulte, ${params.travellers.cabinClass}`;
+  }
+
+  goBack(): void {
+    this.hasSearched.set(false);
+    this.searchResults.set(null);
   }
 
   stopPropagation(event: Event) {
